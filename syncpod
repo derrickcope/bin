@@ -1,0 +1,13 @@
+#!/bin/bash
+
+#sync podcasts     
+
+if [ -e /tmp/syncpod.lock ]
+then
+    exit
+else
+    touch /tmp/syncpod.lock
+    rsync -vrP6 --delete --exclude-from=/home/derrick/scripts/exclude_pod.txt root@128.199.228.218:~/podcasts/* ~/music/podcasts/
+    rm /tmp/syncpod.lock
+fi
+

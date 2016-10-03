@@ -1,0 +1,13 @@
+#!/bin/bash
+
+#sync podcasts     
+
+if [ -e /tmp/synctodo.lock ]
+then
+    exit
+else
+    touch /tmp/synctodo.lock
+    rsync -vrP6 --delete root@162.243.234.81:/root/todotxt/todo.txt ~/scripts/todotxt/
+    rm /tmp/synctodo.lock
+fi
+

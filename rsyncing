@@ -1,0 +1,102 @@
+#!/bin/bash
+#rsyncing.sh
+#Rsync functions
+
+topodcasts () {
+rsync -vrP root@162.243.234.81:~/podcasts/$(date +%Y-%m-%d) ~/music/podcasts/
+}
+
+yespodcasts () {
+rsync -vrP root@162.243.234.81:~/podcasts/$(date --date='yesterday' '+%Y-%m-%d') ~/music/podcasts/
+}
+
+linuxshanghaipics () {
+rsync -vdP  --delete ~/website/linuxshanghai.com/html/pics/ root@162.243.234.81:/var/www/linuxshanghai.com/html/pics/
+}
+
+linuxshanghaiblog () {
+rsync -vdP  --delete ~/website/linuxshanghai.com/html/ root@162.243.234.81:/var/www/linuxshanghai.com/html/
+}
+
+pilatesshanghaisite () {
+rsync -vdP  --delete ~/website/pilatesshanghai.com/html/ root@128.199.92.48:/var/www/html/
+}
+
+pilatesshanghaicnsite () {
+rsync -vdP  --delete ~/website/pilatesshanghai.com/html/cn/ root@128.199.92.48:/var/www/html/cn/
+}
+
+pilatesshanghaiblog () {
+rsync -vdPr --delete ~/website/pilatesshanghai.com/html/blog/ root@128.199.92.48:/var/www/html/blog/
+}
+
+pilatesshanghaicnblog () {
+rsync -vdP  --delete ~/website/pilatesshanghai.com/html/cn/blog/ root@128.199.92.48:/var/www/html/cn/blog/
+}
+
+pilatesshanghaiblogpics () {
+rsync -vdP  --delete ~/website/pilatesshanghai.com/html/blog/pics/ root@128.199.92.48:/var/www/html/blog/pics/
+}
+
+pilatesshanghaicnblogpics () {
+rsync -vdP  --delete ~/website/pilatesshanghai.com/html/cn/blog/pics/ root@128.199.92.48:/var/www/html/cn/blog/pics/
+}
+
+homebckupb () {
+rsync -adP --delete --exclude-from=/home/derrick/scripts/exclude_me.txt /home/  /run/media/derrick/B/ 
+}
+
+homebckup () {
+rsync -adP --delete --exclude-from=/home/derrick/scripts/exclude_me.txt /home/  /run/media/derrick/BCKUP/ 
+}
+
+homebckupc () {
+rsync -adP --delete --exclude-from=/home/derrick/scripts/exclude_me.txt /home/  /run/media/derrick/C/ 
+}
+
+homebckupdownloads () {
+rsync -adP --delete /home/derrick/downloads/  /run/media/derrick/C/downloads/
+}
+
+homebckupmusic () {
+rsync -adP --delete --exclude-from=/home/derrick/scripts/exclude_me.txt /home/derrick/music/  /run/media/derrick/B/music/
+}
+
+#script starts
+
+case $1 in
+     topodcasts) topodcasts
+     ;;
+     yespodcasts) yespodcasts
+     ;;
+     linuxshanghaipics) linuxshanghaipics
+     ;;
+     linuxshanghaiblog) linuxshanghaiblog
+     ;;
+     pilatesshanghaisite) pilatesshanghaisite
+     ;;
+     pilatesshanghaicnsite) pilatesshanghaicnsite
+     ;;
+     pilatesshanghaiblog) pilatesshanghaiblog
+     ;;
+     pilatesshanghaiblogpics) pilatesshanghaiblogpics
+     ;;
+     pilatesshanghaicnblog) pilatesshanghaicnblog
+     ;;
+     pilatesshanghaicnblogpics) pilatesshanghaicnblogpics
+     ;;
+     homebckupb) homebckupb
+     ;;
+     homebckup) homebckup
+     ;;
+     homebckupc) homebckupc
+     ;;
+     homebckupdownloads) homebckupdownloads
+     ;;
+     homebckupmusic) homebckupmusic
+     ;;
+     *) echo "function not found, check spelling"
+      ;;
+
+esac
+
