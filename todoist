@@ -1,0 +1,350 @@
+#!/usr/bin/perl
+#===============================================================================
+#
+#         FILE: todoist
+#
+#        USAGE: ./todoist  
+#
+#  DESCRIPTION:     
+#
+#      OPTIONS: ---
+# REQUIREMENTS: ---
+#         BUGS: ---
+#        NOTES: ---
+#       AUTHOR: Derrick Cope (), derrick(at)thecopes(dot)me
+# ORGANIZATION: 
+#      VERSION: 1.0
+#      CREATED: 10/12/2016 09:19:46 PM
+#     REVISION: ---
+#===============================================================================
+
+use strict;
+use warnings;
+#use utf8;
+use 5.022;
+use Data::Dumper;
+use LWP::UserAgent;
+use Getopt::Long;
+use Data::UUID;
+use Term::ANSIColor qw( colored );
+use JSON;
+
+
+# when no option or the --help option is given this is printed
+
+=pod
+
+=head1 NAME
+
+todoist --manage task list on www.todoist.com
+
+=head1 SYNOPSIS
+
+todoist --[option] ...  [item] ...
+
+=head1 DESCRIPTION
+
+
+-h, --help 
+    
+        show this message
+
+-l, --list
+    
+        list task items
+
+--additem
+        
+        add task to task list
+        
+        Ex. todoist --item="content of task" --priority=3 --due="tomorrow" --additem
+
+--update
+        
+        update task
+
+        Ex. todoist --number="listed number of task" --item="updated task content" --priority="1-4" 
+        --due="include the date even if it doesn't change" --update
+
+--complete
+
+        complete task
+
+        Ex. todoist --number="listed number of task" --done
+
+--delete 
+
+        delete task
+
+        Ex. todoist --number="listed number of task" --delete
+
+=head1 ISSUES
+
+--due 
+ 
+    needs to be included in --additem and --update otherwise stuff goes wrong.
+
+    Todoist supports a wide range of due formats including recurring dates. I haven't tried them all.
+    
+    Ex. today, tomorrow, next month, end of the month, today at 10, jan 27, 01/27/2017,
+
+    Ex. every day, every 3 days, every weekday, every morning.
+    for more info https://support.todoist.com/hc/en-us/articles/205325931-Dates-and-Times
+
+=cut
+
+
+my $url = 'https://todoist.com/API/v7/sync';
+my $token = '50f3bdb6015bc0ebbbc112ba79f8ce2139f920c8';
+my $ua = LWP::UserAgent->new;
+my @goal;
+
+my $list; #initialize options
+my $help;
+my $additem;
+my $task_priority;
+my $due_date;
+my $item_name;
+my $project_name;
+my %items_id;    ## hash of task item ids => order numbers as printed in list
+my %project_id; ## hash of project ids => project names
+my $done; #initialize options
+my $number; #initialize options
+my $item_number; #number of item being changed
+
+
+my $priority1 = 'red'; #color to denote priority 1 in task list
+my $priority2 = 'yellow'; #color to denote priority 2 in task list
+my $priority3 = 'blue'; #color to denote priority 3 in task list
+my $priority4 = 'white'; #color to denote priority 4 in task list
+
+my $tasks = $ua->post($url, { #retrieve object from todoist.com api
+    token => $token,
+    sync_token => "*",
+    resource_types => '["all"]',
+});
+my $decodetasks = $tasks->decoded_content; #decode raw data
+my $decodetasks_ref = from_json( $decodetasks ); #turn raw data to perl object
+#print Dumper $decodetasks_ref;
+
+foreach my $pros ( 0 .. $#{$decodetasks_ref->{'projects'}} ) {
+    $project_id{$decodetasks_ref->{'projects'}[$pros]{'id'}} = $decodetasks_ref->{'projects'}[$pros]{'name'} ,
+}
+#print Dumper \%project_id;
+#create hash of items id to order of item in list
+foreach my $item_order ( 0 .. $#{$decodetasks_ref->{'items'}} ) {
+#    say "$item_order";
+    $items_id{$decodetasks_ref->{'items'}[$item_order]{'id'}} = $item_order; 
+}
+#print Dumper \%items_id;
+
+#create reverse of %items_id 
+my %items_id_reverse = reverse %items_id;
+
+
+GetOptions ('list' => \&list, #assign options to functions
+            'help' => \&help,
+            'priority=i' => \$task_priority,
+            'due=s' => \$due_date,
+            'item=s'=> \$item_name,
+            'project=s' => \$project_name,
+            'additem' => \&additem,
+            'number=s' => \$item_number,
+            'done' => \&complete,
+            'update' => \&update,
+            'delete' => \&delete,
+
+) or die system( "perldoc $0" );
+
+#start of functions
+
+sub help {
+    system( "perldoc $0" );
+}
+
+sub list {
+
+    system( "clear" );
+    foreach my $i ( 0 .. $#{$decodetasks_ref->{'items'}} )  {
+
+        if ( $decodetasks_ref->{'items'}[$i]{'priority'} == 1 ) {
+           printf( 
+                "%4s %-75s % -35s %-15s\n", 
+                colored( $items_id{ $decodetasks_ref->{'items'}[$i]{'id'} } +1 .")", $priority4 ), 
+                colored( $decodetasks_ref->{'items'}[$i]{'content'}, $priority4 ), 
+                colored( "Project: $project_id{$decodetasks_ref->{'items'}[$i]{'project_id'}}", $priority4 ), 
+                colored( "Due: $decodetasks_ref->{'items'}[$i]{'date_string'}", $priority4 ),
+             );
+        } elsif ( $decodetasks_ref->{'items'}[$i]{'priority'} == 2 ) {
+           printf( 
+                 "%4s %-75s %-35s %-15s\n", 
+                colored( $items_id{ $decodetasks_ref->{'items'}[$i]{'id'} } +1 .")", $priority4 ), 
+                colored( $decodetasks_ref->{'items'}[$i]{'content'}, $priority3 ), 
+                colored( "Project: $project_id{$decodetasks_ref->{'items'}[$i]{'project_id'}}", $priority3 ), 
+                colored( "Due: $decodetasks_ref->{'items'}[$i]{'date_string'}", $priority3 )
+            );
+        } elsif ( $decodetasks_ref->{'items'}[$i]{'priority'} == 3 ) {
+           printf( 
+                "%4s %-75s %-35s %-15s\n", 
+                colored( $items_id{ $decodetasks_ref->{'items'}[$i]{'id'} } +1 .")", $priority4 ), 
+                colored( $decodetasks_ref->{'items'}[$i]{'content'}, $priority2 ), 
+                colored( "Project: $project_id{$decodetasks_ref->{'items'}[$i]{'project_id'}}", $priority2 ), 
+                colored( "Due: $decodetasks_ref->{'items'}[$i]{'date_string'}", $priority2 )
+            ); 
+        } else {
+            printf(  
+                 "%4s %-75s %-35s %-15s\n", 
+                colored( $items_id{ $decodetasks_ref->{'items'}[$i]{'id'} } +1 .")", $priority4 ), 
+                colored( $decodetasks_ref->{'items'}[$i]{'content'}, $priority1 ), 
+                colored( "Project: $project_id{$decodetasks_ref->{'items'}[$i]{'project_id'}}", $priority1 ), 
+                colored( "Due: $decodetasks_ref->{'items'}[$i]{'date_string'}", $priority1 )
+            );
+        
+        }
+     } 
+}
+
+sub additem {
+    
+    my %project_id_reverse;
+
+    foreach my $project_key ( keys %project_id ) {
+        $project_id_reverse{$project_id{$project_key}} = $project_key;
+    }
+
+    my $ug = Data::UUID->new;
+    my $uuid = $ug->create_str();
+    my $tempid = $ug->create_str();
+    my $additem_type_ref = [{
+                            'type' => 'item_add',
+                            'temp_id' => $tempid,
+                            'uuid' => $uuid,
+                            'args' => {
+                                        'content' => $item_name,
+                                        'project_id' => $project_id_reverse{$project_name},
+                                        'priority' => $task_priority,
+                                        'date_string' => $due_date,
+    
+                                    },
+    }];
+
+    my $additem_type_json = to_json( $additem_type_ref );
+    my $additem_token_ref = { 
+                            'token' => $token,
+                            'commands' => $additem_type_json,
+    };
+
+    my $additem = $ua->post( $url, $additem_token_ref );
+    
+    if ( $additem ->is_success() ) {
+        print "item $item_name added!\n";
+    } else {
+        print "item not added: " . $additem->status_line();
+    }
+}
+
+sub complete {
+    my $ug = Data::UUID->new;
+    my $uuid = $ug->create_str();
+ 
+    my $complete_item_id = $items_id_reverse{$item_number -= 1};
+
+    my $complete_command_ref = [{
+                                'type' => 'item_complete',
+                                'uuid' => $uuid,
+                                'args' => {
+                                            'ids' => [ $complete_item_id ]
+                                }
+    }];
+
+    my $complete_command_json = to_json( $complete_command_ref );
+
+    my $complete_token_ref = {
+                            'token' => $token,
+                            'commands' => $complete_command_json,
+    };
+    my $complete_item = $ua->post( $url, $complete_token_ref );
+
+    if ( $complete_item ->is_success() ) {
+        print "item " .($item_number += 1) ." completed!\n";
+    } else {
+        print "item not completed: " . $complete_item->status_line();
+    }
+}
+
+sub update {
+    my $ug = Data::UUID->new;
+    my $uuid = $ug->create_str();
+ 
+    my $update_item_id = $items_id_reverse{$item_number -= 1};
+
+    my $update_command_ref = [{
+                                'type' => 'item_update',
+                                'uuid' => $uuid,
+                                'args' => {
+                                            'id' =>  $update_item_id,
+                                            'priority' => $task_priority,
+                                            'content' => $item_name,
+                                            'date_string' => $due_date,
+                                }
+    }];
+
+    my $update_command_json = to_json( $update_command_ref );
+
+    my $update_token_ref = {
+                            'token' => $token,
+                            'commands' => $update_command_json,
+    };
+    my $update_item = $ua->post( $url, $update_token_ref );
+
+    if ( $update_item ->is_success() ) {
+        print "item " .( $item_number +=1 ) ." updated!\n";
+    } else {
+        print "item not updated: " . $update_item->status_line();
+    }
+}
+
+sub delete {
+    my $ug = Data::UUID->new;
+    my $uuid = $ug->create_str();
+ 
+    my $delete_item_id = $items_id_reverse{$item_number -= 1};
+
+    my $delete_command_ref = [{
+                                'type' => 'item_delete',
+                                'uuid' => $uuid,
+                                'args' => {
+                                            'ids' => [ $delete_item_id ]
+                                }
+    }];
+
+    my $delete_command_json = to_json( $delete_command_ref );
+
+    my $delete_token_ref = {
+                            'token' => $token,
+                            'commands' => $delete_command_json,
+    };
+    my $delete_item = $ua->post( $url, $delete_token_ref );
+
+    if ( $delete_item ->is_success() ) {
+        print "item " .($item_number += 1) ." deleted!\n";
+    } else {
+        print "item not deleted: " . $delete_item->status_line();
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -40,7 +40,15 @@ $groups = join " ", @groups;
 return $groups;
 }
 
+sub free {
+    chomp($dfresult = `free -mh`);
+    @memarray = split /\s+/, $dfresult;
+    $memstat = "Mem: $memarray[9]/$memarray[8]";
+    return $memstat;
+}
+
 while () {
-    print "%\{F#1793d1\}" ."%\{l\}" . &groups ."%\{r\}" ."%\{F#1793d1\}" . &memroot ." | " . &memhome ." | " ."Date: " . &datetime ."\n";
+    print "%\{F#1793d1\}" ."%\{r\}" ."%\{F#1793d1\}" . &free ." | " . &memroot ." | " . &memhome ." | " ."Date: " . &datetime ."\n";
+#    print "%\{F#1793d1\}" ."%\{l\}" . &groups ."%\{r\}" ."%\{F#1793d1\}" . &memroot ." | " . &memhome ." | " ."Date: " . &datetime ."\n";
     sleep(1);
 }

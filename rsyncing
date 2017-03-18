@@ -42,16 +42,12 @@ pilatesshanghaicnblogpics () {
 rsync -vdP  --delete ~/website/pilatesshanghai.com/html/cn/blog/pics/ root@128.199.92.48:/var/www/html/cn/blog/pics/
 }
 
-homebckupb () {
-rsync -adP --delete --exclude-from=/home/derrick/scripts/exclude_me.txt /home/  /run/media/derrick/B/ 
-}
-
 homebckup () {
 rsync -adP --delete --exclude-from=/home/derrick/scripts/exclude_me.txt /home/  /run/media/derrick/BCKUP/ 
 }
 
-homebckupc () {
-rsync -adP --delete --exclude-from=/home/derrick/scripts/exclude_me.txt /home/  /run/media/derrick/C/ 
+homerestore () {
+rsync -adP --delete /run/media/derrick/BCKUP/ /home/   
 }
 
 homebckupdownloads () {
@@ -85,11 +81,9 @@ case $1 in
      ;;
      pilatesshanghaicnblogpics) pilatesshanghaicnblogpics
      ;;
-     homebckupb) homebckupb
-     ;;
      homebckup) homebckup
      ;;
-     homebckupc) homebckupc
+     homerestore) homerestore
      ;;
      homebckupdownloads) homebckupdownloads
      ;;
@@ -97,6 +91,7 @@ case $1 in
      ;;
      *) echo "function not found, check spelling"
       ;;
+
 
 esac
 
