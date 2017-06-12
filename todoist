@@ -57,7 +57,7 @@ todoist --[option] ...  [item] ...
         
         add task to task list
         
-        Ex. todoist --item="content of task" --priority=3 --due="tomorrow" --additem
+        Ex. todoist --item="content of task" --priority=3 --due="tomorrow" --project"Capital" --additem
 
 --update
         
