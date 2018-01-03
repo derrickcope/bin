@@ -7,7 +7,7 @@ then
     exit
 else
     touch /tmp/syncpod.lock
-    rsync -vrP6 --delete --exclude-from=/home/derrick/scripts/exclude_pod.txt root@128.199.228.218:~/podcasts/* ~/music/podcasts/
+    rsync -vrP6 --delete --exclude-from=/home/derrick/scripts/exclude_pod.txt root@128.199.228.218:~/podcasts/* ~/podcasts/
     rm /tmp/syncpod.lock
 fi
 
