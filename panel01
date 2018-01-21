@@ -1,7 +1,7 @@
 #! /bin/sh
 
 #if xdo id -a "$PANEL_WM_NAME" > /dev/null ; then
-  #printf "%s\n" "The panel is already running." >&2
+	#printf "%s\n" "The panel is already running." >&2
 	#exit 1
 #fi
 
@@ -16,7 +16,7 @@ bspc subscribe report > "$PANEL_FIFO" &
 
 . panel_colors
 
-panel_bar < "$PANEL_FIFO" | lemonbar -a 32 -u 2 -n "$PANEL_WM_NAME" -g 1920x$PANEL_HEIGHT -f "$PANEL_FONT" -F "$COLOR_DEFAULT_FG" -B "$COLOR_DEFAULT_BG" | sh &
+panel_bar < "$PANEL_FIFO" | lemonbar -a 32 -u 2 -n "$PANEL_WM_NAME" -g 1920x$PANEL_HEIGHT+1920 -f "$PANEL_FONT" -F "$COLOR_DEFAULT_FG" -B "$COLOR_DEFAULT_BG" | sh &
 
 wid=$(xdo id -a "$PANEL_WM_NAME")
 xdo above -t "$(xdo id -N Bspwm -n root | sort | head -n 1)" "$wid"
