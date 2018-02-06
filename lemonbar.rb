@@ -5,9 +5,9 @@
 
 #load "title.rb"
 #load "bsp_tree.rb"
-require "./wintitle"
-require "./bsp_tree"
-require "./time"
+require "/home/derrick/.bin/wintitle"
+require "/home/derrick/.bin/bsp_tree"
+require "/home/derrick/.bin/time"
 
 loop do
   lemonbar = desktops
