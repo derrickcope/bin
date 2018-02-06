@@ -9,8 +9,6 @@ require 'json'
 $invert_colors = '%{R}'
 $invert_focus_colors = true
 $focus_markers = ["[", "]"]
-focused = ""
-
 
 def sys_cmd
   `bspc wm -d`.chomp
@@ -47,7 +45,7 @@ def desktops
   op = []
   bsp_tree["monitors"].each do |monitor|
     focused = monitor["focusedDesktopId"]
-    op << " " + monitor["name"]
+    op << " " + monitor["name"] + ":"
     monitor["desktops"].each do |desktop|
       if desktop["id"] == focused and monitor["id"] == bsp_tree["focusedMonitorId"]
         op << focused_desktop(desktop)
