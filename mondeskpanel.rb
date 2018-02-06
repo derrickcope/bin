@@ -52,6 +52,8 @@ end
 
 @man = Barr::Manager.new
 
+#bspwm = Barr::Blocks::Bspwm.new bgcolor: '#1793D1', fgcolor: '#D3D3D3', align: :l, focus_markers: ['',''], invert_focus_colors: true, interval: 1
+
 mondesk = Mondesk.new align: :l, interval: 1, bgcolor: '#1793D1', fgcolor: '#D3D3D3'
 
 time = Barr::Blocks::Clock.new format: '%H:%M', icon: "\uf017", bgcolor: '#1793D1', fgcolor: '#D3D3D3', align: :r
@@ -61,6 +63,7 @@ mem = Barr::Blocks::Memory.new icon: 'RAM:', align: :r, bgcolor: '#1793D1', fgco
 
 xtitle = Barr::Blocks::Xtitle.new align: :c, fgcolor: '#D3D3D3', interval: 1
 
+#@man.add bspwm
 @man.add mondesk
 @man.add mem
 @man.add date

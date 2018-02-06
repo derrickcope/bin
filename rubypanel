@@ -7,7 +7,7 @@
 #
 
 
-mondeskpanel.rb | lemonbar -g 1920x20 -d -B "#333333"
+lemonbar.rb | lemonbar -g 1920x20 -d -B "#333333" -F "#D3D3D3" &
 
-mondeskpanel.rb | lemonbar -g 1920x20+1920 -d -B "#333333"
+lemonbar.rb | lemonbar -g 1920x20+1920 -d -B "#333333" -F "#D3D3D3" &
 
