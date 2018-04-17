@@ -33,7 +33,7 @@ end
 
 def unfocused_desktop desktop
   op = ""
-  op += "%{A:bspc desktop -f #{desktop["id"]}:} "
+  op += "%{A:`bspc desktop -f #{desktop["id"]}`:} "
   op += "#{desktop["name"]}"
   op += " %{A}"
 
